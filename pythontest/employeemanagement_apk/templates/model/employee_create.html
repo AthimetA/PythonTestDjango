@@ -6,7 +6,6 @@
 
 {% block content %}
     <h2 class="text-center">Create Employee</h2>
-    <h2 class="text-center">Update Status</h2>
     <form method="post" action="" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}

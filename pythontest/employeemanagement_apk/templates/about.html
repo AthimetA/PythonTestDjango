@@ -5,7 +5,81 @@
 {% endblock %}
 
 {% block content %}
-    <h1 style="color:blue;">เกี่ยวกับเรา</h1>
-    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Enim dignissimos laboriosam voluptates ratione necessitatibus nulla, adipisci dolorum voluptatem corrupti! Pariatur dolore qui consequatur, magni quibusdam sunt hic nulla! Tempore, delectus?</p>
+    <div class="container">
+        <h1 class="text-center my-4">Athimet Aiewcharoen Task</h1>
+        
+        <h2>Assignment: Develop an Employee Management Application</h2>
+        
+        <h3>Objective</h3>
+
+        <ol>
+            <li>
+                <strong>Project Setup:</strong>
+                <ul>
+                    <li>Create a new Django or Flask project with two environments: development and production.</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Models:</strong>
+                <ul>
+                    <li>The employee management application should have four models: Employee, Position, Department, and Status.</li>
+                    <li>
+                        <strong>Employee model:</strong> Contains employee information such as:
+                        <ul>
+                            <li>Name (Text)</li>
+                            <li>Address (Text)</li>
+                            <li>Manager (Y/N)</li>
+                            <li>Status (Status model)</li>
+                            <li>Image (JPG)</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong>Position model:</strong> Contains position name (Text) and salary (Number).
+                    </li>
+                    <li>
+                        <strong>Department model:</strong> Contains department name (Text) and manager (Employee model).
+                    </li>
+                    <li>
+                        <strong>Status model:</strong> Contains the current status of the employee (e.g., in recruitment process, waiting for onboarding, in probation period, normal, and resigned).
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <strong>User Authentication:</strong>
+                <ul>
+                    <li>Add a new login account with a normal user role using Django's built-in authentication or Flask-Login.</li>
+                </ul>
+            </li>
+            <li>
+                <strong>CRUD Operations:</strong>
+                <ul>
+                    <li>Create: Add new entries to the Employee, Position, Department, and Status models.</li>
+                    <li>Read: Display lists of Employee, Position, Department, and Status models.</li>
+                    <li>Update: Edit existing entries in the Employee, Position, Department, and Status models.</li>
+                    <li>Delete: Remove entries from the Employee, Position, Department, and Status models.</li>
+                    <li>Ensure that related data in other models are handled appropriately.</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Advanced Queries:</strong>
+                <ul>
+                    <li>Implement filtering and searching functionality for Employees by Position, Department, and Status.</li>
+                </ul>
+            </li>
+            <li>
+                <strong>API Development:</strong>
+                <ul>
+                    <li>Create a CRUD RESTful API using Django, Flask, or FastAPI for the Employee, Position, and Department models.</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Testing:</strong>
+                <ul>
+                    <li>Write unit tests and integration tests for the models and API endpoints.</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
 {% endblock %}
+
 

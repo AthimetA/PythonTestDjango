@@ -20,7 +20,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-b&)6*32-!chj(g#o^2(e3+do-az@y9^=s)yd6kcf=0ds+$jojb'
+SECRET_KEY = 'django-insecure-pp+vknr(brt!uote70t=f0ucqh7$owhp7s@-t1(z0158*y=df('
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
+
+ALLOWED_HOSTS = []
+
 
 # Application definition
 
@@ -31,9 +37,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'employeemanagement_apk',
-    # REST framework
-    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -118,13 +121,3 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# Media files (Uploaded files)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'  # or os.path.join(BASE_DIR, 'media')
-
-# Debug mode
-
-DEBUG = True
-
-ALLOWED_HOSTS = []

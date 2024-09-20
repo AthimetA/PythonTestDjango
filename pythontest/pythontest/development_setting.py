@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # Test app
     'employeemanagement_apk',
     # REST framework
     'rest_framework',

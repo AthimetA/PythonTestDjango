@@ -6,7 +6,8 @@
 
 {% block content %}
     {% if user.is_authenticated %}
-        <p>Welcome back, {{ user.username }}!</p>
+        <p>Welcome back, {{ user.username }}! please go to the database page.</p>
+        <a href="/database" class="btn btn-primary">Database</a>
         <a href="/logout" class="btn btn-danger">Logout</a>
     {% else %}
         <a href="/login" class="btn btn-primary">Login</a>

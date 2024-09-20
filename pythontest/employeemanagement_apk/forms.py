@@ -2,11 +2,6 @@ from django.forms import ModelForm
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django import forms
-
-# class RigisterFormCustom(UserCreationForm):
-#     class Meta:
-#         model = User
-#         fields = ['username', 'email', 'password1', 'password2']
         
 class RigisterFormCustom(forms.Form):
     username = forms.CharField(max_length=150, required=True)
@@ -58,7 +53,10 @@ class DepartmentForm(forms.ModelForm):
         super(DepartmentForm, self).__init__(*args, **kwargs)
         # Filter the queryset to only include employees who are managers
         self.fields['manager'].queryset = Employee.objects.filter(manager=True)
-        
+        # Allow the manager field to be empty (None)
+        self.fields['manager'].required = False  # Make the manager field optional
+        self.fields['manager'].empty_label = "No Manager"  # Provide a "No Manager" option
+
 class PositionForm(forms.ModelForm):
     class Meta:
         model = Position

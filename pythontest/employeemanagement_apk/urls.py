@@ -12,9 +12,9 @@ router.register(r'positions', PositionViewSet)
 router.register(r'departments', DepartmentViewSet)
 
 urlpatterns = [
+    # Default URLs
     path('', views.index, name='index'),
     path('about', views.about, name='about'),
-    path('form', views.form, name='add'),
     path('database', views.database, name='database'),
     
     # Login and Registeration URLs

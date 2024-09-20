@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib import messages
 from django.core.files.storage import FileSystemStorage
@@ -17,33 +17,10 @@ from employeemanagement_apk.models import Employee, Status, Department, Position
 
 # Create your views here.
 def index(request):
-    testvar = 'HelloWorld'
-    testint = 123
-    testbool = True
-    return render(request, 'index.html', {'testvar': testvar, 'testint': testint, 'testbool': testbool})
+    return render(request, 'index.html')
 
 def about(request):
     return render(request, 'about.html')
-
-@login_required(login_url='index')
-def form(request):
-    # If the request method is POST, the system will get the status from the form and print it.
-    if request.method == 'POST':
-        # Get the status from the form
-        em_status = request.POST.get('em_status')
-        print(f'System Got status: {em_status}')
-        
-        # Save the status to the database
-        new_status = Status.objects.create(
-            em_status=em_status
-        )
-        new_status.save()
-        
-        # Redirect to the database page
-        messages.success(request, 'Status added successfully')
-        return redirect('database')
-    else:
-        return render(request, 'form.html')
 
 @login_required(login_url='index')
 def database(request):
@@ -105,105 +82,14 @@ def logoutUser(request):
     messages.info(request, "Logged out successfully!")
     
     return redirect('login')
-'''
-
-Status Update and Delete Functions
-
-
-'''
-from django.shortcuts import get_object_or_404
-
-@login_required(login_url='index')
-def status_create(request):
-    # If the request method is POST, the system will get the status from the form and print it.
-    if request.method == 'POST':
-        # Get the status from the form
-        em_status = request.POST.get('em_status')
-        print(f'System Got status: {em_status}')
-        
-        # Save the status to the database
-        new_status = Status.objects.create(
-            em_status=em_status
-        )
-        new_status.save()
-        
-        # Redirect to the database page
-        messages.success(request, 'Status added successfully')
-        return redirect('database')
-    else:
-        return render(request, 'form.html')
-
-@login_required(login_url='index')
-def status_update(request, status_id):
-    # Get the status object from the database, ensuring it's available for both GET and POST
-    status = get_object_or_404(Status, pk=status_id)
-    
-    if request.method == 'POST':
-        # Update the status from the form data
-        status.em_status = request.POST.get('em_status')
-        status.save()
-        # Add a success message and redirect
-        messages.success(request, 'Status updated successfully')
-        return redirect('database')  # Redirect to the desired page after update
-    else:
-        # Render the template with the existing status object for editing
-        return render(request, 'status_update.html', {'status': status})
-
-@login_required(login_url='index')
-def status_delete(request, status_id):
-    # Get the status object from the database and delete it
-    status = Status.objects.get(pk=status_id)
-    # Delete the status
-    status.delete()
-    # Redirect to the database page
-    messages.success(request, 'Status deleted successfully')
-    return redirect('database')
-
 
 '''
 
-Employee Functions
+Form Handling Functions
 
 
 '''
 from employeemanagement_apk.forms import DepartmentForm, PositionForm, StatusForm, EmployeeForm
-
-# @login_required(login_url='index')
-# def create_employee(request):
-#     if request.method == 'POST':
-#         form = EmployeeForm(request.POST, request.FILES)
-#         if form.is_valid():
-#             form.save()
-#             messages.success(request, 'Employee created successfully.')
-#             return redirect('database')
-#     else:
-#         form = EmployeeForm()
-#     return render(request, 'model/employee_create.html', {'form': form})
-
-# @login_required(login_url='index')
-# def update_employee(request, employee_id):
-#     employee = get_object_or_404(Employee, pk=employee_id)
-#     if request.method == 'POST':
-#         form = EmployeeForm(request.POST, request.FILES, instance=employee)
-#         if form.is_valid():
-#             form.save()
-#             messages.success(request, 'Employee updated successfully.')
-#             return redirect('database')
-#     else:
-#         form = EmployeeForm(instance=employee)
-#     return render(request, 'model/employee_update.html', {'form': form})
-
-# @login_required(login_url='index')
-# def delete_employee(request, employee_id):
-#     employee = Employee.objects.get(pk=employee_id)
-#     employee.delete()
-#     messages.success(request, 'Employee deleted successfully.')
-#     return redirect('database')
-
-
-from django.shortcuts import get_object_or_404
-from django.contrib import messages
-from django.shortcuts import redirect
 
 def handle_form(request, form_class, instance=None, success_message='', redirect_url='database'):
     redirect_obj = None  # Initialize redirect_obj
@@ -215,7 +101,6 @@ def handle_form(request, form_class, instance=None, success_message='', redirect
         redirect_obj = redirect(redirect_url)
 
     return form, redirect_obj
-
 
 # Employee URLs
 @login_required(login_url='index')
@@ -239,7 +124,6 @@ def create_employee(request):
         'positions': positions,
         'departments': departments,
     })
-
 
 @login_required(login_url='index')
 def update_employee(request, employee_id):
@@ -343,6 +227,11 @@ def delete_status(request, status_id):
     messages.success(request, 'Status deleted successfully.')
     return redirect('database')
 
+'''
+
+Employee Query Functions
+
+'''
 # Employee Query URLs
 from .forms import EmployeeFilterForm
 

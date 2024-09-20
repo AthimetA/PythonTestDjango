@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}
+    <title>Status Add form</title>
+{% endblock %}
+
+{% block content %}
+    <h2 class="text-center">Status Add form</h2>
+    <form method="post" action="form">
+        {% csrf_token %}
+        <div class="form-group mb-2">
+            <label for="name">Employee Status</label>
+            <input type="char" name="em_status" class="form-control">
+        </div>
+        <input type="submit" value="บันทึกข้อมูล" class="btn btn-success">
+    </form>
+{% endblock %}

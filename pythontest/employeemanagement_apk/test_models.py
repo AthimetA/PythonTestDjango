@@ -181,3 +181,22 @@ class DepartmentModelTests(TestCase):
 
             self.assertEqual(department.manager, None)
             
+class EmployeeModelTests(TestCase):
+    
+    '''
+    Test for the Employee model.
+    '''
+    
+    def setUp(self):
+        # This method will be run before each test
+        self.department_names = LIST_DEPARTMENT
+        self.position_names = LIST_POSITION
+        self.statuses = LIST_STATUS
+        
+        # Create a random department
+        department = Department.objects.create(name=random.choice(self.department_names))
+        # Create a random position
+        position = Position.objects.create(name=random.choice(self.position_names), salary=np.random.randint(30000, 100000))
+        # Create a random status
+        status = Status.objects.create(em_status=random.choice(self.statuses))
+        

@@ -3,6 +3,12 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django import forms
         
+'''
+
+RigisterFormCustom: Register form for the user registration page.
+
+
+'''
 class RigisterFormCustom(forms.Form):
     username = forms.CharField(max_length=150, required=True)
     # email = forms.EmailField(required=True)
@@ -27,6 +33,13 @@ class RigisterFormCustom(forms.Form):
         return user
     
 
+'''
+
+Form for Employee, Department, Position, and Status models.
+
+
+'''
+
 from .models import Department, Position, Status, Employee
 
 class EmployeeForm(forms.ModelForm):
@@ -42,7 +55,6 @@ class EmployeeForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['position'].help_text = "Optional: Select a position if applicable."
         self.fields['department'].help_text = "Optional: Select a department if applicable."
-
 
 class DepartmentForm(forms.ModelForm):
     class Meta:
@@ -66,6 +78,13 @@ class StatusForm(forms.ModelForm):
     class Meta:
         model = Status
         fields = ['em_status']
+        
+'''
+
+Form for filtering employees by position, department, and status.
+
+
+'''
 
 class EmployeeFilterForm(forms.Form):
     position = forms.ModelChoiceField(queryset=Position.objects.all(), required=False)

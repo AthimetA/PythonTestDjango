@@ -46,16 +46,18 @@ class EmployeeForm(forms.ModelForm):
     class Meta:
         model = Employee
         fields = ['name', 'address', 'manager', 'status', 'position', 'department', 'image']
-        widgets = {
-            'position': forms.Select(attrs={'required': 'false'}),
-            'department': forms.Select(attrs={'required': 'false'}),
-        }
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super(EmployeeForm, self).__init__(*args, **kwargs)
+        # Allow the position and department fields to be empty (None)
+        self.fields['position'].required = False
+        self.fields['department'].required = False
+        self.fields['position'].empty_label = "No Position"
+        self.fields['department'].empty_label = "No Department"
+        
         self.fields['position'].help_text = "Optional: Select a position if applicable."
         self.fields['department'].help_text = "Optional: Select a department if applicable."
-
+    
 class DepartmentForm(forms.ModelForm):
     class Meta:
         model = Department

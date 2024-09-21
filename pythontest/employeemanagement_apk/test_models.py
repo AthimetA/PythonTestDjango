@@ -9,6 +9,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from pathlib import Path
 import os
 from django.conf import settings
+from django.db import transaction
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -321,8 +322,13 @@ class EmployeeModelTests(TestCase):
         '''
         Clean up any uploaded files after each test.
         '''
-        employee = Employee.objects.last()
-        if employee and employee.image:
-            image_path = os.path.join(settings.MEDIA_ROOT, employee.image.name)
-            if os.path.exists(image_path):
-                os.remove(image_path)
+        try:
+            employee = Employee.objects.last()
+            if employee and employee.image:
+                image_path = os.path.join(settings.MEDIA_ROOT, employee.image.name)
+                if os.path.exists(image_path):
+                    os.remove(image_path)
+        except Exception as e:
+            print(f"Error during tearDown: {e}")
+            # Ensure the transaction does not fail
+            transaction.set_rollback(True)

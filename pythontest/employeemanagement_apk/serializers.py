@@ -50,7 +50,11 @@ class DepartmentSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'manager']
         
     def create(self, validated_data):
-        return Department.objects.create(**validated_data)
+        if validated_data.get('manager') and not validated_data['manager'].manager:
+            raise serializers.ValidationError(
+                f'The employee {validated_data["manager"].name} is not designated as a manager.'
+            )
+        return super().create(validated_data)
     
     def update(self, instance, validated_data):
         instance.name = validated_data.get('name', instance.name)

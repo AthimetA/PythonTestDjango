@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
 from .models import Employee, Position, Department, Status
+from rest_framework.exceptions import ValidationError
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from pathlib import Path
@@ -51,40 +52,6 @@ class PositionAPITests(APITestCase):
             self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
             self.assertEqual(Position.objects.count(), 0)
             
-class DepartmentAPITests(APITestCase):
-    
-        def setUp(self):
-            # Create test data
-            self.department_data = {
-                'name': 'IT',
-            }
-    
-        def test_create_department(self):
-            response = self.client.post('/api/departments/', self.department_data)
-            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-            self.assertEqual(Department.objects.count(), 1)
-            self.assertEqual(Department.objects.get().name, 'IT')
-    
-        def test_get_department(self):
-            department = Department.objects.create(**self.department_data)
-            response = self.client.get(f'/api/departments/{department.id}/')
-            self.assertEqual(response.status_code, status.HTTP_200_OK)
-            self.assertEqual(response.data['name'], department.name)
-    
-        def test_update_department(self):
-            department = Department.objects.create(**self.department_data)
-            updated_data = {'name': 'HR'}
-            response = self.client.put(f'/api/departments/{department.id}/', updated_data)
-            self.assertEqual(response.status_code, status.HTTP_200_OK)
-            department.refresh_from_db()
-            self.assertEqual(department.name, 'HR')
-    
-        def test_delete_department(self):
-            department = Department.objects.create(**self.department_data)
-            response = self.client.delete(f'/api/departments/{department.id}/')
-            self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-            self.assertEqual(Department.objects.count(), 0)
-            
 class EmployeeAPITests(APITestCase):
 
     def setUp(self):
@@ -131,8 +98,6 @@ class EmployeeAPITests(APITestCase):
         
     def test_create_employee(self):
         response = self.client.post('/api/employees/', self.employee_data_id_as_int, format='multipart')
-        print('*'*50)
-        print(f'Function: test_create_employee\nResponse: {response.data}')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Employee.objects.count(), 1)
         self.assertEqual(Employee.objects.get().name, 'John Doe')
@@ -140,8 +105,6 @@ class EmployeeAPITests(APITestCase):
     def test_retrieve_employee(self):
         employee = Employee.objects.create(**self.employee_data_id_as_instance)
         response = self.client.get(f'/api/employees/{employee.id}/')
-        print('*'*50)
-        print(f'Function: test_retrieve_employee\nResponse: {response.data}')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['name'], 'John Doe')
         
@@ -149,8 +112,6 @@ class EmployeeAPITests(APITestCase):
         employee = Employee.objects.create(**self.employee_data_id_as_instance)
         updated_data = {'name': 'Jane Doe'}
         response = self.client.patch(f'/api/employees/{employee.id}/', updated_data, format='multipart')
-        print('*'*50)
-        print(f'Function: test_update_employee\nResponse: {response.data}')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         employee.refresh_from_db()
         self.assertEqual(employee.name, 'Jane Doe')
@@ -158,10 +119,87 @@ class EmployeeAPITests(APITestCase):
     def test_delete_employee(self):
         employee = Employee.objects.create(**self.employee_data_id_as_instance)
         response = self.client.delete(f'/api/employees/{employee.id}/')
-        employee.full_clean()
-        print('*'*50)
-        print(f'Function: test_delete_employee\nResponse: {response.data}')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Employee.objects.count(), 0)
     
+class DepartmentAPITests(APITestCase):
+
+    def setUp(self):
+        # Get a manager and a non-manager from the database
+        self.manager = Employee.objects.filter(manager=True).first()
+        self.non_manager = Employee.objects.filter(manager=False).first()
+
+        # Ensure we have a valid manager for the tests
+        if not self.manager:
+            self.manager = Employee.objects.create(
+                name='Manager Name',
+                address='Manager Address',
+                manager=True,
+                status=None,  
+                position=None,  
+                department=None, 
+                image=None 
+            )
+
+        if not self.non_manager:
+            self.non_manager = Employee.objects.create(
+                name='Non-manager Name',
+                address='Non-manager Address',
+                manager=False,
+                status=None, 
+                position=None,
+                department=None,
+                image=None
+            )
+
+        # Department data with the manager's ID
+        self.department_data_int = {
+            'name': 'IT',
+            'manager': self.manager.id  # Use the manager's ID
+        }
+        
+        self.department_data_instance = {
+            'name': 'IT',
+            'manager': self.manager  # Use the manager's instance
+        }
+
+    def test_create_department(self):
+        response = self.client.post('/api/departments/', self.department_data_int, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Department.objects.count(), 1)
+        self.assertEqual(Department.objects.get().name, 'IT')
+
+    def test_retrieve_department(self):
+        department = Department.objects.create(**self.department_data_instance)
+        response = self.client.get(f'/api/departments/{department.id}/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['name'], 'IT')
+
+    def test_update_department(self):
+        department = Department.objects.create(**self.department_data_instance)
+        updated_data = {'name': 'HR'}
+        response = self.client.patch(f'/api/departments/{department.id}/', updated_data, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        department.refresh_from_db()
+        self.assertEqual(department.name, 'HR')
+
+    def test_delete_department(self):
+        department = Department.objects.create(**self.department_data_instance)
+        response = self.client.delete(f'/api/departments/{department.id}/')
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Department.objects.count(), 0)
+
+    def test_create_department_invalid_manager(self):
+        # Attempt to create a department with a non-manager employee
+        response = self.client.post('/api/departments/', {
+            'name': 'Non-Manager Department',
+            'manager': self.non_manager.id  # Use a non-manager's ID
+        }, format='json')
+
+        # Assert that the response status is 400 BAD REQUEST
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+            
+        
 

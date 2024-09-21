@@ -143,7 +143,7 @@ class DepartmentModelTests(TestCase):
                                                             status=maneger['status'],
                                                             department=maneger['department'],
                                                             position=maneger['position'],
-                                                            image=maneger['image'])
+                                                            image=GOBAL_IMAGE)
             
             not_manager = get_random_employee_data()
             self.not_manager_employee = Employee.objects.create(name=not_manager['name'],
@@ -152,64 +152,60 @@ class DepartmentModelTests(TestCase):
                                                                 status=not_manager['status'],
                                                                 department=not_manager['department'],
                                                                 position=not_manager['position'],
-                                                                image=not_manager['image'])
+                                                                image=GOBAL_IMAGE)
     
+        def tearDown(self):
+            '''
+            Clean up any uploaded files after each test.
+            '''
+            employees = Employee.objects.all()
+            for employee in employees:
+                if employee.image:
+                    image_path = os.path.join(settings.MEDIA_ROOT, employee.image.name)
+                    if os.path.exists(image_path):
+                        os.remove(image_path)
+
         def test_create_department(self):
             '''
             Normal test case for creating a Department object.
-            
             '''
             name = random.choice(self.department_names)  # Get a random department name
-            # Create a random manager for the department
             department = Department.objects.create(name=name, manager=self.manager_employee)
             
             self.assertEqual(department.name, name)
             self.assertEqual(department.manager, self.manager_employee)
-            
+
         def test_create_department_with_not_manager(self):
             '''
             Test case for creating a Department object with a manager who is not a manager.
             '''
             name = random.choice(self.department_names)
-            # Create a random employee who is not a manager
             with self.assertRaises(ValidationError):
-                Department.objects.create(name=name, manager=self.not_manager_employee)
-                
+                try:
+                    Department.objects.create(name=name, manager=self.not_manager_employee)
+                finally:
+                    # Cleanup the image even if the test raises an exception
+                    if self.not_manager_employee.image:
+                        image_path = os.path.join(settings.MEDIA_ROOT, 'images', self.not_manager_employee.image.name)
+                        if os.path.exists(image_path):
+                            os.remove(image_path)
+
         def test_create_department_without_name(self):
             '''
             Test case for creating a Department object without a name.
             '''
-            # Attempt to create a Department without a name
             with self.assertRaises(ValidationError):
                 department = Department(name=None, manager=self.manager_employee)
                 department.full_clean()  # Run model validation
-
-                
+        
         def test_create_department_without_manager(self):
             '''
             Test case for creating a Department object without a manager.
             '''
             name = random.choice(self.department_names)
-            # Attempt to create a Department without a manager
-            department = Department(name=name, manager=None)
-
+            department = Department.objects.create(name=name, manager=None)
             self.assertEqual(department.manager, None)
-            
-        def tearDown(self):
-            '''
-            Clean up any uploaded files after each test.
-            '''
-            try:
-                employee = Employee.objects.last()
-                if employee and employee.image:
-                    image_path = os.path.join(settings.MEDIA_ROOT, employee.image.name)
-                    if os.path.exists(image_path):
-                        os.remove(image_path)
-            except Exception as e:
-                print(f"Error during tearDown: {e}")
-                # Ensure the transaction does not fail
-                transaction.set_rollback(True)
-
+        
 class EmployeeModelTests(TestCase):
     
     '''

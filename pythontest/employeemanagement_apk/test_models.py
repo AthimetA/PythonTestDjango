@@ -194,6 +194,21 @@ class DepartmentModelTests(TestCase):
             department = Department(name=name, manager=None)
 
             self.assertEqual(department.manager, None)
+            
+        def tearDown(self):
+            '''
+            Clean up any uploaded files after each test.
+            '''
+            try:
+                employee = Employee.objects.last()
+                if employee and employee.image:
+                    image_path = os.path.join(settings.MEDIA_ROOT, employee.image.name)
+                    if os.path.exists(image_path):
+                        os.remove(image_path)
+            except Exception as e:
+                print(f"Error during tearDown: {e}")
+                # Ensure the transaction does not fail
+                transaction.set_rollback(True)
 
 class EmployeeModelTests(TestCase):
     
@@ -268,27 +283,45 @@ class EmployeeModelTests(TestCase):
         '''
         Test case for creating an Employee object without a name.
         '''
-        with self.assertRaises(IntegrityError):
-            Employee.objects.create(name=None, 
-                                    address=self.address, 
-                                    manager=self.manager, 
-                                    status=self.status, 
-                                    department=self.department, 
-                                    position=self.position, 
-                                    image=self.image)
+        try:
+            with self.assertRaises(IntegrityError):
+                Employee.objects.create(
+                    name=None,
+                    address=self.address,
+                    manager=self.manager,
+                    status=self.status,
+                    department=self.department,
+                    position=self.position,
+                    image=self.image
+                )
+        finally:
+            # Ensure that the image file is removed even if the test fails
+            if self.image:
+                image_path = os.path.join(settings.MEDIA_ROOT, 'images', self.image.name)
+                if os.path.exists(image_path):
+                    os.remove(image_path)
             
     def test_create_employee_without_address(self):
         '''
         Test case for creating an Employee object without an address.
         '''
-        with self.assertRaises(IntegrityError):
-            Employee.objects.create(name=self.name, 
-                                    address=None, 
-                                    manager=self.manager, 
-                                    status=self.status, 
-                                    department=self.department, 
-                                    position=self.position, 
-                                    image=self.image)
+        try:
+            with self.assertRaises(IntegrityError):
+                Employee.objects.create(
+                    name=self.name,
+                    address=None,
+                    manager=self.manager,
+                    status=self.status,
+                    department=self.department,
+                    position=self.position,
+                    image=self.image
+                )
+        finally:
+            # Ensure that the image file is removed even if the test fails
+            if self.image:
+                image_path = os.path.join(settings.MEDIA_ROOT, 'images', self.image.name)
+                if os.path.exists(image_path):
+                    os.remove(image_path)
             
     def test_create_employee_without_status(self):
         '''
@@ -329,6 +362,5 @@ class EmployeeModelTests(TestCase):
                 if os.path.exists(image_path):
                     os.remove(image_path)
         except Exception as e:
-            print(f"Error during tearDown: {e}")
             # Ensure the transaction does not fail
             transaction.set_rollback(True)

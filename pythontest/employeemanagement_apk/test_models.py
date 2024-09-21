@@ -5,9 +5,21 @@ import random
 from django.db import IntegrityError # IntegrityError is raised when a model's required field is not provided
 from django.core.exceptions import ValidationError # ValidationError is raised when a model's field does not meet the requirements specified in the model definition
 
+from django.core.files.uploadedfile import SimpleUploadedFile
+from pathlib import Path
+import os
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+TEST_IMAGE_PATH = os.path.join(BASE_DIR, 'test_img\\img1.png')
+
 LIST_STATUS = ['Active', 'Inactive', 'On Leave', 'Resigned', 'Retired']
 LIST_DEPARTMENT = ['Engineering', 'HR', 'Finance', 'Marketing', 'Operations']
 LIST_POSITION = ['Manager', 'Developer', 'Designer', 'Analyst', 'Tester']
+
+# Load the test image from a file outside the APK
+with open(TEST_IMAGE_PATH, 'rb') as img_file:
+    GOBAL_IMAGE = SimpleUploadedFile('img1.jpg', img_file.read(), content_type='image/png')
 
 # Base Functionality Test Cases
 def get_random_employee_data():
@@ -180,7 +192,7 @@ class DepartmentModelTests(TestCase):
             department = Department(name=name, manager=None)
 
             self.assertEqual(department.manager, None)
-            
+
 class EmployeeModelTests(TestCase):
     
     '''
@@ -189,14 +201,118 @@ class EmployeeModelTests(TestCase):
     
     def setUp(self):
         # This method will be run before each test
-        self.department_names = LIST_DEPARTMENT
-        self.position_names = LIST_POSITION
         self.statuses = LIST_STATUS
+        self.departments = LIST_DEPARTMENT
+        self.positions = LIST_POSITION
         
-        # Create a random department
-        department = Department.objects.create(name=random.choice(self.department_names))
-        # Create a random position
-        position = Position.objects.create(name=random.choice(self.position_names), salary=np.random.randint(30000, 100000))
-        # Create a random status
-        status = Status.objects.create(em_status=random.choice(self.statuses))
+        # Prepare the data for the related models
+        self.name = ''.join(random.choices('abcdefghijklmnopqrstuvwxyz', k=random.randint(5, 10)))
+        self.address = ''.join(random.choices('abcdefghijklmnopqrstuvwxyz', k=random.randint(10, 30)))
+        self.manager = random.choice([True, False])
         
+        # Create the related models
+        self.status = Status.objects.create(em_status=random.choice(self.statuses))
+        manager_of_department = get_random_employee_data()
+        self.manager_of_department = Employee.objects.create(name=manager_of_department['name'],
+                                               address=manager_of_department['address'],
+                                               manager=True,
+                                               status=manager_of_department['status'],
+                                               department=manager_of_department['department'],
+                                               position=manager_of_department['position'],
+                                               image=manager_of_department['image'])
+        self.department = Department.objects.create(name=random.choice(self.departments), manager=self.manager_of_department)
+        self.position = Position.objects.create(name=random.choice(self.positions), salary=np.random.randint(30000, 100000))
+        
+        # Load the test image from a file outside the APK
+        self.image = GOBAL_IMAGE
+            
+    def test_create_employee_with_all_fields(self):
+        '''
+        Normal test case for creating an Employee object with all fields provided.
+        '''
+        employee = Employee.objects.create(name=self.name, address=self.address, manager=self.manager, status=self.status, department=self.department, position=self.position, image=self.image)
+        
+        self.assertEqual(employee.name, self.name)
+        self.assertEqual(employee.address, self.address)
+        self.assertEqual(employee.manager, self.manager)
+        self.assertEqual(employee.status, self.status)
+        self.assertEqual(employee.department, self.department)
+        self.assertEqual(employee.position, self.position)
+        # Check if the image was saved as imageFieldField
+        self.assertTrue(employee.image)
+        
+    def test_create_employee_withnecessary_fields(self):
+        '''
+        Test case for creating an Employee object with only the necessary fields provided.
+        '''
+        employee = Employee.objects.create(name=self.name,
+                                           address=self.address,
+                                           manager=self.manager,
+                                           status=self.status,
+                                           department=None,
+                                           position=None,
+                                           image=self.image
+                                           )
+        
+        self.assertEqual(employee.name, self.name)
+        self.assertEqual(employee.address, self.address)
+        self.assertEqual(employee.manager, self.manager)
+        self.assertEqual(employee.status, self.status)
+        self.assertEqual(employee.department, None)
+        self.assertEqual(employee.position, None)
+        self.assertTrue(employee.image)
+        
+    def test_create_employee_without_name(self):
+        '''
+        Test case for creating an Employee object without a name.
+        '''
+        with self.assertRaises(IntegrityError):
+            Employee.objects.create(name=None, 
+                                    address=self.address, 
+                                    manager=self.manager, 
+                                    status=self.status, 
+                                    department=self.department, 
+                                    position=self.position, 
+                                    image=self.image)
+            
+    def test_create_employee_without_address(self):
+        '''
+        Test case for creating an Employee object without an address.
+        '''
+        with self.assertRaises(IntegrityError):
+            Employee.objects.create(name=self.name, 
+                                    address=None, 
+                                    manager=self.manager, 
+                                    status=self.status, 
+                                    department=self.department, 
+                                    position=self.position, 
+                                    image=self.image)
+            
+    def test_create_employee_without_status(self):
+        '''
+        Test case for creating an Employee object without a status.
+        '''
+        with self.assertRaises(ValidationError):
+            employee = Employee.objects.create(name=self.name, 
+                                               address=self.address, 
+                                               manager=self.manager, 
+                                               status=None, 
+                                               department=self.department, 
+                                               position=self.position, 
+                                               image=self.image)
+            employee.full_clean()
+             
+    def test_create_employee_without_image(self):
+        '''
+        Test case for creating an Employee object without an image.
+        '''
+        with self.assertRaises(ValidationError):
+            employee = Employee.objects.create(name=self.name, 
+                                               address=self.address, 
+                                               manager=self.manager, 
+                                               status=self.status, 
+                                               department=self.department, 
+                                               position=self.position, 
+                                               image=None)
+            employee.full_clean()
+                

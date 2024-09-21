@@ -25,7 +25,7 @@ class Position(models.Model):
     salary = models.IntegerField(null=False)
     
     def __str__(self):
-        return self.name + ' - ' + str(self.salary)
+        return self.name
 
 class Status(models.Model):
     # Contains the current status of the employee (e.g., in recruitmentprocess, waiting for onboarding, in probation period, normal, and resigned)
@@ -48,7 +48,7 @@ class Employee(models.Model):
     position = models.ForeignKey(Position, on_delete=models.SET_NULL, null=True, default=None, blank=True)
     
     def __str__(self):
-        return self.name + ' - ' + (self.status.em_status if self.status else 'No Status')
+        return self.name
 
 
 

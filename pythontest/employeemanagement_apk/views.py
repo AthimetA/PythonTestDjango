@@ -269,56 +269,31 @@ from rest_framework import status
 
 from rest_framework.parsers import MultiPartParser, FormParser
 
-class EmployeeViewSet(viewsets.ModelViewSet):
-    queryset = Employee.objects.all()
-    serializer_class = EmployeeSerializer
-    parser_classes = [MultiPartParser, FormParser]
+class BaseViewSet(viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=True)
-        # Validate the serializer
-        if serializer.is_valid():
-            serializer.save()  # Save the instance after validation
-            return Response(serializer.data)  # Now this is safe to access
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-class PositionViewSet(viewsets.ModelViewSet):
-    queryset = Position.objects.all()
-    serializer_class = PositionSerializer
-    
-    def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        # Validate the serializer
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-class DepartmentViewSet(viewsets.ModelViewSet):
+
+class EmployeeViewSet(BaseViewSet):
+    queryset = Employee.objects.all()
+    serializer_class = EmployeeSerializer
+    parser_classes = [MultiPartParser, FormParser]
+
+class PositionViewSet(BaseViewSet):
+    queryset = Position.objects.all()
+    serializer_class = PositionSerializer
+
+class DepartmentViewSet(BaseViewSet):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
     
-    def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        # Validate the serializer
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-class StatusViewSet(viewsets.ModelViewSet):
+class StatusViewSet(BaseViewSet):
     queryset = Status.objects.all()
     serializer_class = StatusSerializer
-    
-    def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=True)
-        # Validate the serializer
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     

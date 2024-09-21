@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError # ValidationError is raised w
 from django.core.files.uploadedfile import SimpleUploadedFile
 from pathlib import Path
 import os
+from django.conf import settings
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -316,3 +317,12 @@ class EmployeeModelTests(TestCase):
                                                image=None)
             employee.full_clean()
                 
+    def tearDown(self):
+        '''
+        Clean up any uploaded files after each test.
+        '''
+        employee = Employee.objects.last()
+        if employee and employee.image:
+            image_path = os.path.join(settings.MEDIA_ROOT, employee.image.name)
+            if os.path.exists(image_path):
+                os.remove(image_path)

@@ -21,7 +21,7 @@ LIST_POSITION = ['Manager', 'Developer', 'Designer', 'Analyst', 'Tester']
 
 # Load the test image from a file outside the APK
 with open(TEST_IMAGE_PATH, 'rb') as img_file:
-    GOBAL_IMAGE = SimpleUploadedFile('img1.jpg', img_file.read(), content_type='image/png')
+    GOBAL_IMAGE = SimpleUploadedFile('test_image_model.png', img_file.read(), content_type='image/png')
 
 # Base Functionality Test Cases
 def get_random_employee_data():

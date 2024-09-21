@@ -5,12 +5,14 @@ from .models import Employee, Position, Department, Status
 from django.core.files.uploadedfile import SimpleUploadedFile
 from pathlib import Path
 import os
+from django.conf import settings
+from django.db import transaction
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 TEST_IMAGE_PATH = os.path.join(BASE_DIR, 'test_img', 'img4.png')
 
-# Create an image file for testing
+# Create an image file for testing or if it exists, use it
 with open(TEST_IMAGE_PATH, 'rb') as img_file:
     GOBAL_IMG = SimpleUploadedFile(name='test_image_api.png', content=img_file.read(), content_type='image/png')
 
@@ -114,15 +116,23 @@ class EmployeeAPITests(APITestCase):
         }
         
     def tearDown(self):
-        # Delete the test image file if it exists
-        if os.path.isfile(TEST_IMAGE_PATH):
-            os.remove(TEST_IMAGE_PATH)
-
+        '''
+        Clean up any uploaded files after each test.
+        '''
+        try:
+            employee = Employee.objects.last()
+            if employee and employee.image:
+                image_path = os.path.join(settings.MEDIA_ROOT, employee.image.name)
+                if os.path.exists(image_path):
+                    os.remove(image_path)
+        except Exception as e:
+            # Ensure the transaction does not fail
+            transaction.set_rollback(True)
+        
     def test_create_employee(self):
         response = self.client.post('/api/employees/', self.employee_data_id_as_int, format='multipart')
         print('*'*50)
         print(f'Function: test_create_employee\nResponse: {response.data}')
-        
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Employee.objects.count(), 1)
         self.assertEqual(Employee.objects.get().name, 'John Doe')
@@ -148,8 +158,10 @@ class EmployeeAPITests(APITestCase):
     def test_delete_employee(self):
         employee = Employee.objects.create(**self.employee_data_id_as_instance)
         response = self.client.delete(f'/api/employees/{employee.id}/')
+        employee.full_clean()
         print('*'*50)
         print(f'Function: test_delete_employee\nResponse: {response.data}')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Employee.objects.count(), 0)
     
+

@@ -238,6 +238,20 @@ class EmployeeModelTests(TestCase):
         
         # Load the test image from a file outside the APK
         self.image = GOBAL_IMAGE
+    
+    def tearDown(self):
+        '''
+        Clean up any uploaded files after each test.
+        '''
+        try:
+            employee = Employee.objects.last()
+            if employee and employee.image:
+                image_path = os.path.join(settings.MEDIA_ROOT, employee.image.name)
+                if os.path.exists(image_path):
+                    os.remove(image_path)
+        except Exception as e:
+            # Ensure the transaction does not fail
+            transaction.set_rollback(True)
             
     def test_create_employee_with_all_fields(self):
         '''
@@ -347,16 +361,3 @@ class EmployeeModelTests(TestCase):
                                                image=None)
             employee.full_clean()
                 
-    def tearDown(self):
-        '''
-        Clean up any uploaded files after each test.
-        '''
-        try:
-            employee = Employee.objects.last()
-            if employee and employee.image:
-                image_path = os.path.join(settings.MEDIA_ROOT, employee.image.name)
-                if os.path.exists(image_path):
-                    os.remove(image_path)
-        except Exception as e:
-            # Ensure the transaction does not fail
-            transaction.set_rollback(True)

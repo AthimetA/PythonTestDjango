@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from employeemanagement_apk.models import Employee, Position, Department
+from employeemanagement_apk.models import Employee, Position, Department, Status
 
 # REST API Serializer for the Employee model
 class EmployeeSerializer(serializers.ModelSerializer):
@@ -55,5 +55,18 @@ class DepartmentSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance.name = validated_data.get('name', instance.name)
         instance.manager = validated_data.get('manager', instance.manager)
+        instance.save()
+        return instance
+    
+class StatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Status
+        fields = ['id', 'em_status']
+        
+    def create(self, validated_data):
+        return Status.objects.create(**validated_data)
+    
+    def update(self, instance, validated_data):
+        instance.em_status = validated_data.get('em_status', instance.em_status)
         instance.save()
         return instance

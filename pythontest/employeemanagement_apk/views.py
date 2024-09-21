@@ -263,7 +263,7 @@ REST API Functions
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from employeemanagement_apk.serializers import EmployeeSerializer, PositionSerializer, DepartmentSerializer
+from employeemanagement_apk.serializers import EmployeeSerializer, PositionSerializer, DepartmentSerializer, StatusSerializer
 from rest_framework.decorators import api_view
 from rest_framework import status
 
@@ -299,6 +299,19 @@ class PositionViewSet(viewsets.ModelViewSet):
 class DepartmentViewSet(viewsets.ModelViewSet):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
+    
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        # Validate the serializer
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class StatusViewSet(viewsets.ModelViewSet):
+    queryset = Status.objects.all()
+    serializer_class = StatusSerializer
     
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
